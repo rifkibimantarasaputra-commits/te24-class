@@ -1,0 +1,41 @@
+name: Build TE24 CLASS iOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build iOS
+    runs-on: macos-latest
+
+    steps:
+      - name: Ambil kode dari GitHub
+        uses: actions/checkout@v4
+
+      - name: Pasang Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Cek Flutter
+        run: flutter --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build aplikasi iOS
+        run: flutter build ios --release --no-codesign
+
+      - name: Buat IPA
+        run: |
+          rm -rf Payload
+          mkdir Payload
+          cp -R build/ios/iphoneos/Runner.app Payload/Runner.app
+          zip -r TE24_CLASS_iOS_unsigned.ipa Payload
+
+      - name: Simpan IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: TE24-CLASS-iOS
+          path: TE24_CLASS_iOS_unsigned.ipa
